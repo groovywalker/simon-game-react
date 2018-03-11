@@ -1,0 +1,868 @@
+class Headline extends React.Component {
+	render() {
+		return (
+			<div className='text-center'>
+				<h1>Simon</h1>
+			</div>
+		);
+	}
+}
+
+class Counter extends React.Component {
+	render() {
+		return (
+			<div className='text-center card'>
+				<h3 id='count'>Count --</h3>
+			</div>
+		);
+	}
+}
+
+class Controls extends React.Component {
+	render() {
+		return (
+			<div className='text-center'>
+				<button className="btn btn-primary" id="start">Start</button>
+				<button className="btn btn-warning" id="strict">Strict</button>
+				<button className="btn btn-danger" id="restart">Restart</button>
+			</div>
+		);
+	}
+}
+
+class Buttons extends React.Component {
+
+	render() {
+		return (
+			<div>
+
+				<audio id="soundCorrect">
+					<source src="https://s3.amazonaws.com/freecodecamp/simonSound1.mp3" type="audio/mpeg" />
+				</audio>
+
+				<audio id="soundWrong">
+					<source src="https://s3.amazonaws.com/freecodecamp/simonSound2.mp3" type="audio/mpeg" />
+				</audio>
+
+				<audio id="soundWin">
+					<source src="https://s3.amazonaws.com/freecodecamp/simonSound3.mp3" type="audio/mpeg" />
+				</audio>
+
+				<div className="row">
+					<div className="col"></div>
+					<div className="col game-btns selectGrn" id="grn" 
+						onClick={this.handleGreenClick}></div>
+					<div className="col game-btns selectRed" id="red"></div>
+					<div className="col"></div>
+				</div>
+
+				<div className="row">
+					<div className="col"></div>
+					<div className="col game-btns selectYlw" id="ylw"></div>
+					<div className="col game-btns selectBlu" id="blu"></div>
+					<div className="col"></div>
+				</div>
+
+			</div>
+		);
+	}
+}
+
+class App extends React.Component {
+	render() {
+		return (
+			<div className='container'>
+				<Headline />
+				<Counter />
+				<Controls />
+				<Buttons />
+			</div>
+		);
+	}
+}
+
+ReactDOM.render(
+	<App />,
+	document.getElementById('root')
+);
+
+
+
+
+
+
+
+
+
+
+
+/* Game Sounds */
+var soundCorrect 	= document.getElementById("soundCorrect");
+var soundWrong 		= document.getElementById("soundWrong");
+var soundWin 			= document.getElementById("soundWin");
+
+/* Game Progress */
+var choicesPlayer 			= [];
+var choicesRobot 				= [];
+var choicesRobotSpecific = [];
+var choicesEqual = "";
+
+/* Game Objects */
+var count = 0;
+
+var green = {
+	id: 1,
+	sound: function() {
+		soundCorrect.load();		
+		soundCorrect.play();
+		$("#grn").css("background-color", "DarkGreen");		
+		setTimeout(function() {
+			$("#grn").css("background-color", "green");
+		}, 1200);
+	}
+};
+
+var red	= {
+	id: 2,
+	sound: function() {
+		$("#red").css("background-color", "DarkRed");
+		soundCorrect.load();		
+		soundCorrect.play();
+		setTimeout(function() {
+			$("#red").css("background-color", "red");
+		}, 1200);
+	}
+};
+
+var yellow = {
+	id: 3,
+	sound: function() {
+		$("#ylw").css("background-color", "GoldenRod");
+		soundCorrect.load();		
+		soundCorrect.play();
+		setTimeout(function() {
+			$("#ylw").css("background-color", "yellow");
+		}, 1200);
+	}
+};
+
+var blue = {
+	id: 4,
+	sound: function() {
+		$("#blu").css("background-color", "MidnightBlue");
+		soundCorrect.load();
+		soundCorrect.play();
+		setTimeout(function() {
+			$("#blu").css("background-color", "blue");
+		}, 1200);
+	}
+};
+
+// Pre-determine Robot's 20 choices by number
+function createRobotChoices() {
+	for (i = 0; i < 20; i++) {
+		var r = Math.floor(Math.random() * 4) + 1;
+		choicesRobot.push(r);
+	}
+
+	// Robot's choices by color
+	choicesRobot.forEach(function(x) {
+		if (x == 1) {
+			choicesRobotSpecific.push(green);
+		} else if (x == 2) {
+			choicesRobotSpecific.push(red);
+		} else if (x == 3) {
+			choicesRobotSpecific.push(yellow);
+		} else {
+			choicesRobotSpecific.push(blue);
+		}
+	});
+
+}
+
+/* Robot choices */
+var progress = [];
+var progressRobot = [];
+
+// Compares choicesRobot with choicesPlayer
+function progressGame() {
+	
+	progress = choicesRobotSpecific.slice(0, count);
+	progressRobot = choicesRobot.slice(0, count);
+
+	progress.forEach(function(x, index) {
+		setTimeout(function() {
+			x.sound();
+		}, index * 2500);
+	});
+}
+
+$(document).ready(function() {
+
+	/* Restart Game */
+	$("#restart").click(function() {
+		count = 1;
+		$("#count").text(count);
+		choicesRobot = [];
+		choicesRobotSpecific = [];
+		createRobotChoices();
+		progressGame();
+	});				
+
+	/* Start Game */
+	$("#start").click(function() {
+
+		// Initial setup after start
+		count = 1;
+		choicesRobot = [];
+		choicesRobotSpecific = [];		
+
+		// Update counter
+		$("#count").text(count);
+
+		// Initial setup for robot after start
+		createRobotChoices();
+		console.log('choicesRobot: ' + choicesRobot);
+
+		/* First Game Step */
+		
+		// Initial comparison of player and robot choices 
+		if (count <= 20) {
+			progressGame();
+		}
+
+		// Plays all 20 robot choices
+		// choicesRobotSpecific.forEach(function(x, index) {
+		// 	setTimeout(function() {
+		// 		x.sound();
+		// 	}, index * 2000);
+		// });
+
+		// Green Button
+		$("#grn").mousedown(function() {
+			
+			green.sound();
+			
+			choicesPlayer.push(green.id);
+			
+			// Check if player choices equal robot choices
+			choicesEqual = progressRobot.every(function(x, index) {
+				return x === choicesPlayer[index];
+			});
+			
+		});
+
+		$("#grn").mouseup(function() {
+			
+			/* If player and robot choices are equal... */
+			if (choicesPlayer.length == progressRobot.length && choicesEqual == true) {
+				
+				choicesPlayer = [];
+				count += 1;
+				$("#count").text(count);
+				
+				console.log("choicesEqual = true");
+
+				/* Winning the Game */
+				if (count == 21) {
+				
+					soundWin.play();
+					choicesRobot = [];
+					choicesRobotSpecific = [];
+					createRobotChoices();
+					count = 1;
+					
+				} else {
+					
+					progressGame();
+					
+				}
+
+			} else if (
+				choicesPlayer.length == progressRobot.length &&
+				choicesEqual == false
+			) {
+
+				soundWrong.load();
+				soundWrong.play();
+				choicesPlayer = [];
+
+				console.log("choicesEqual = false");
+				progressGame();
+				
+			} else if (choicesPlayer.length < progressRobot.length) {
+				
+				console.log(choicesPlayer);
+				console.log("building choices");
+				
+			} else {
+				
+				count += 1;
+				$("#count").text(count);
+				console.log("For some reason, choicesEqual = true");
+				choicesPlayer = [];
+				progressGame();
+				
+			}
+		});
+
+		// Red Button
+		$("#red").mousedown(function() {
+
+			red.sound();
+			choicesPlayer.push(red.id);
+
+			choicesEqual = progressRobot.every(function(x, index) {
+				return x === choicesPlayer[index];
+			});
+
+		});
+
+		$("#red").mouseup(function() {
+			if (choicesPlayer.length == progressRobot.length && choicesEqual == true) {
+				
+				choicesPlayer = [];
+				count += 1;
+				$("#count").text(count);
+				console.log("choicesEqual = true");
+
+				/* soundWinning the Game */
+				if (count == 20) {
+					
+					soundWin.load();					
+					soundWin.play();
+					choicesRobot = [];
+					choicesRobotSpecific = [];
+					createRobotChoices();
+					count = 1;
+					
+				} else {
+					
+					progressGame();
+					
+				}				
+
+
+			} else if (
+				choicesPlayer.length == progressRobot.length &&
+				choicesEqual == false
+			) {
+				
+				soundWrong.load();				
+				soundWrong.play();
+				choicesPlayer = [];
+				console.log("choicesEqual = false");
+
+				progressGame();
+				
+			} else if (choicesPlayer.length < progressRobot.length) {
+				
+				console.log(choicesPlayer);
+				console.log("building choices");
+				
+			} else {
+				
+				count += 1;
+				$("#count").text(count);
+				console.log("for some reason, choicesEqual = true");
+				choicesPlayer = [];
+				progressGame();
+				
+			}
+		});
+
+		// Yellow Button
+		$("#ylw").mousedown(function() {
+			
+			yellow.sound();
+			choicesPlayer.push(yellow.id);
+
+			choicesEqual = progressRobot.every(function(x, index) {
+				return x === choicesPlayer[index];
+			});
+
+		});
+
+		$("#ylw").mouseup(function() {
+			
+			if (choicesPlayer.length == progressRobot.length && choicesEqual == true) {
+			
+				choicesPlayer = [];
+				count += 1;
+				$("#count").text(count);
+				console.log("choicesEqual = true");
+
+				/* soundWinning the Game */
+				if (count == 20) {
+				
+					soundWin.load();					
+					soundWin.play();
+					choicesRobot = [];
+					choicesRobotSpecific = [];
+					createRobotChoices();
+					count = 1;
+					
+				} else {
+					
+					progressGame();
+					
+				}				
+
+
+			} else if (
+				choicesPlayer.length == progressRobot.length &&
+				choicesEqual == false
+			) {
+				
+				soundWrong.load();				
+				soundWrong.play();
+				choicesPlayer = [];
+				console.log("choicesEqual = false");
+
+				progressGame();
+				
+			} else if (choicesPlayer.length < progressRobot.length) {
+
+				console.log(choicesPlayer);
+				console.log("building choices");
+				
+			} else {
+				
+				count += 1;
+				$("#count").text(count);
+				console.log("for some reason, choicesEqual = true");
+				choicesPlayer = [];
+				progressGame();
+				
+			}
+			
+		});
+
+		// Blue Button
+		$("#blu").mousedown(function() {
+
+			blue.sound();
+			choicesPlayer.push(blue.id);
+
+			choicesEqual = progressRobot.every(function(x, index) {
+				return x === choicesPlayer[index];
+			});
+
+		});
+
+		$("#blu").mouseup(function() {
+			
+			if (choicesPlayer.length == progressRobot.length && choicesEqual == true) {
+			
+				choicesPlayer = [];
+				count += 1;
+				$("#count").text(count);
+				console.log("choicesEqual = true");
+
+
+				/* soundWinning the Game */
+				if (count == 20) {
+				
+					soundWin.load();					
+					soundWin.play();
+					choicesRobot = [];
+					choicesRobotSpecific = [];
+					createRobotChoices();
+					count = 1;
+					
+				} else {
+					
+					progressGame();
+					
+				}
+
+			} else if (
+				choicesPlayer.length == progressRobot.length &&
+				choicesEqual == false
+			) {
+				
+				soundWrong.load();				
+				soundWrong.play();
+				choicesPlayer = [];
+				console.log("choicesEqual = false");
+
+				progressGame();
+				
+			} else if (choicesPlayer.length < progressRobot.length) {
+				
+				console.log(choicesPlayer);
+				console.log("building choices");
+				
+			} else {
+				
+				count += 1;
+				$("#count").text(count);
+				console.log("for some reason, choicesEqual = true");
+				choicesPlayer = [];
+				progressGame();
+				
+			}
+			
+		});
+		
+	});
+
+	/* Strict Mode */
+	$("#strict").click(function() {
+		
+		count = 1;
+		choicesRobot = [];
+		choicesRobotSpecific = [];		
+		$("#count").text(count);
+		createRobotChoices();
+
+		/* Game Button Feedback */
+		console.log(choicesRobot);
+
+		/* Robot choices */
+		var progress = [];
+		var progressRobot = [];
+
+		// Compares choicesRobot with choicesPlayer
+		var choicesEqual = "";
+		function progressGame() {
+			
+			progress = choicesRobotSpecific.slice(0, count);
+			progressRobot = choicesRobot.slice(0, count);
+			progress.forEach(function(x, index) {
+				setTimeout(function() {
+					x.sound();
+				}, index * 2500);
+			});
+			
+		}
+
+		function progressGameStrict() {
+			
+			progress = choicesRobotSpecific.slice(0, count - count + 1);
+			progressRobot = choicesRobot.slice(0, count - count + 1);
+			progress.forEach(function(x, index) {
+				setTimeout(function() {
+					x.sound();
+				}, index * 2500);
+			});
+			
+		}
+
+		/* Restart Game */
+		$("#restart").click(function() {
+			
+			count = 1;
+			$("#count").text(count);
+			choicesRobot = [];
+			choicesRobotSpecific = [];
+			createRobotChoices();
+			console.log(choicesRobot);			
+			progressGameStrict();
+			
+		});						
+
+		/* First Game Step */
+		if (count <= 20) {
+			
+			progressGame();
+			
+		}
+
+		// Plays all 20 robot choices
+		// choicesRobotSpecific.forEach(function(x, index) {
+		// 	setTimeout(function() {
+		// 		x.sound();
+		// 	}, index * 2000);
+		// });
+
+		// Green Button
+		$("#grn").mousedown(function() {
+			
+			green.sound();
+			choicesPlayer.push(green.id);
+
+			choicesEqual = progressRobot.every(function(x, index) {
+				return x === choicesPlayer[index];
+			});
+
+		});
+
+		$("#grn").mouseup(function() {
+
+			if (choicesPlayer.length == progressRobot.length && choicesEqual == true) {
+			
+				choicesPlayer = [];
+				count += 1;
+				$("#count").text(count);
+				console.log("choicesEqual = true");
+
+				/* soundWinning the Game */
+				if (count >= 21) {
+				
+					soundWin.load();					
+					soundWin.play();
+					choicesRobot = [];
+					choicesRobotSpecific = [];
+					createRobotChoices();
+					count = 1;
+					progressGame();
+					
+				} else {
+					
+					progressGame();
+					
+				}			
+
+
+			} else if (
+				choicesPlayer.length == progressRobot.length &&
+				choicesEqual == false
+			) {
+
+				soundWrong.load();				
+				soundWrong.play();
+				count = 1;
+				$("#count").text(count);
+				choicesPlayer = [];
+
+				console.log("choicesEqual = false");
+				choicesRobot = [];
+				choicesRobotSpecific = [];
+				createRobotChoices();
+
+				progressGameStrict();
+				
+			} else if (choicesPlayer.length < progressRobot.length) {
+				
+				console.log(choicesPlayer);
+				console.log("building choices");
+				
+			} else {
+				
+				count += 1;
+				$("#count").text(count);
+				console.log("For some reason, choicesEqual = true");
+				choicesPlayer = [];
+				progressGame();
+				
+			}
+		});
+
+		// Red Button
+		$("#red").mousedown(function() {
+
+			red.sound();
+			choicesPlayer.push(red.id);
+
+			choicesEqual = progressRobot.every(function(x, index) {
+				return x === choicesPlayer[index];
+			});
+
+		});
+
+		$("#red").mouseup(function() {
+			
+			if (choicesPlayer.length == progressRobot.length && choicesEqual == true) {
+			
+				choicesPlayer = [];
+				count += 1;
+				$("#count").text(count);
+				console.log("choicesEqual = true");
+
+				/* soundWinning the Game */
+				if (count >= 21) {
+					soundWin.load();					
+					soundWin.play();
+					choicesRobot = [];
+					choicesRobotSpecific = [];
+					createRobotChoices();
+					count = 1;
+					progressGame();
+				} else {
+					progressGame();
+				}			
+
+			} else if (
+				choicesPlayer.length == progressRobot.length &&
+				choicesEqual == false
+			) {
+				
+				soundWrong.load();				
+				soundWrong.play();
+				count = 1;
+				$("#count").text(count);
+				choicesPlayer = [];
+				console.log("choicesEqual = false");
+				choicesRobot = [];
+				choicesRobotSpecific = [];				     
+				createRobotChoices();
+
+				progressGameStrict();
+				
+			} else if (choicesPlayer.length < progressRobot.length) {
+				
+				console.log(choicesPlayer);
+				console.log("building choices");
+				
+			} else {
+				
+				count += 1;
+				$("#count").text(count);
+				console.log("for some reason, choicesEqual = true");
+				choicesPlayer = [];
+				progressGame();
+				
+			}
+		});
+
+		// Yellow Button
+		$("#ylw").mousedown(function() {
+			
+			yellow.sound();
+			choicesPlayer.push(yellow.id);
+
+			choicesEqual = progressRobot.every(function(x, index) {
+				return x === choicesPlayer[index];
+			});
+
+		});
+
+		$("#ylw").mouseup(function() {
+			
+			if (choicesPlayer.length == progressRobot.length && choicesEqual == true) {
+			
+				choicesPlayer = [];
+				count += 1;
+				$("#count").text(count);
+				console.log("choicesEqual = true");
+
+				/* soundWinning the Game */
+				if (count >= 21) {
+				
+					soundWin.load();
+					soundWin.play();
+					choicesRobot = [];
+					choicesRobotSpecific = [];
+					createRobotChoices();
+					count = 1;
+					progressGame();
+					
+				} else {
+					
+					progressGame();
+					
+				}			
+
+
+			} else if (
+				choicesPlayer.length == progressRobot.length &&
+				choicesEqual == false
+			) {
+
+				soundWrong.load();				
+				soundWrong.play();
+				count = 1;
+				$("#count").text(count);
+				choicesPlayer = [];
+				console.log("choicesEqual = false");
+				choicesRobot = [];
+				choicesRobotSpecific = [];				
+				createRobotChoices();
+
+				progressGameStrict();
+				
+			} else if (choicesPlayer.length < progressRobot.length) {
+
+				console.log(choicesPlayer);
+				console.log("building choices");
+				
+			} else {
+				
+				count += 1;
+				$("#count").text(count);
+				console.log("for some reason, choicesEqual = true");
+				choicesPlayer = [];
+				progressGame();
+				
+			}
+		});
+
+		// Blue Button
+		$("#blu").mousedown(function() {
+			
+			blue.sound();
+			choicesPlayer.push(blue.id);
+
+			choicesEqual = progressRobot.every(function(x, index) {
+				return x === choicesPlayer[index];
+			});
+
+		});
+
+		$("#blu").mouseup(function() {
+
+			if (choicesPlayer.length == progressRobot.length && choicesEqual == true) {
+			
+				choicesPlayer = [];
+				count += 1;
+				$("#count").text(count);
+				console.log("choicesEqual = true");
+
+
+				/* soundWinning the Game */
+				if (count >= 21) {
+				
+					soundWin.load();					
+					soundWin.play();
+					choicesRobot = [];
+					choicesRobotSpecific = [];
+					createRobotChoices();
+					count = 1;
+					progressGame();
+					
+				} else {
+					
+					progressGame();
+					
+				}			
+
+
+			} else if (
+				choicesPlayer.length == progressRobot.length &&
+				choicesEqual == false
+			) {
+				
+				soundWrong.load();				
+				soundWrong.play();
+				count = 1;
+				$("#count").text(count);
+				choicesPlayer = [];
+				console.log("choicesEqual = false");
+				choicesRobot = [];
+				choicesRobotSpecific = [];				
+				createRobotChoices();
+
+				progressGameStrict();
+				
+			} else if (choicesPlayer.length < progressRobot.length) {
+
+				console.log(choicesPlayer);
+				console.log("building choices");
+				
+			} else {
+				
+				count += 1;
+				$("#count").text(count);
+				console.log("for some reason, choicesEqual = true");
+				choicesPlayer = [];
+				progressGame();
+				
+			}
+			
+		});
+		
+	});
+	
+});
+
